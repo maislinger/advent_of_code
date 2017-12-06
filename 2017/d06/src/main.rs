@@ -46,10 +46,10 @@ fn cycle_to_rep(blocks: &mut Vec<u64>) -> (u64, u64) {
     let mut btree_set = BTreeMap::new();
     let mut steps = 0;
 
-    let (steps, looplen) = loop {
+    let looplen = loop {
         let oldval = btree_set.insert(blocks.clone(), steps);
         if let Some(old_step) = oldval {
-            break (steps, steps - old_step)
+            break steps - old_step
         }
 
         step(blocks);
