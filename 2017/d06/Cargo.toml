@@ -1,0 +1,6 @@
+[package]
+name = "d06"
+version = "1.0.0"
+authors = ["maislinger"]
+
+[dependencies]
