@@ -1,0 +1,8 @@
+[package]
+name = "d12"
+version = "1.0.0"
+authors = ["maislinger"]
+
+[dependencies]
+regex = "0.2"
+lazy_static = "1.0"
