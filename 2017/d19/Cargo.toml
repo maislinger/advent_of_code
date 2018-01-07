@@ -1,0 +1,6 @@
+[package]
+name = "d19"
+version = "1.0.0"
+authors = ["maislinger"]
+
+[dependencies]
