@@ -1,0 +1,7 @@
+[package]
+name = "d21"
+version = "1.0.0"
+authors = ["maislinger"]
+
+[dependencies]
+regex = "0.2"
