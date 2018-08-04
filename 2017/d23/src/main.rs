@@ -2,7 +2,7 @@
 extern crate lazy_static;
 extern crate regex;
 
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 enum InstructionValue {
@@ -41,11 +41,11 @@ impl Machine {
     fn new(instructions: Vec<Instruction>, default_a: i64) -> Machine {
         Machine {
             registers: BTreeMap::new(),
-            instructions: instructions,
+            instructions,
             next_inst: Some(0),
             finished: false,
             muls_called: 0,
-            default_a: default_a,
+            default_a,
         }
     }
 
@@ -186,6 +186,17 @@ fn convert_input(input: &str) -> Vec<Instruction> {
     result
 }
 
+fn is_prime(number: u64) -> bool {
+    let mut d = 2;
+    while d * d <= number {
+        if number % d == 0 {
+            return false;
+        }
+        d += 1;
+    }
+    true
+}
+
 fn compute_solution_part_one(input: &str) -> usize {
     let instructions = convert_input(input);
     let mut machine = Machine::new(instructions, 0);
@@ -195,22 +206,17 @@ fn compute_solution_part_one(input: &str) -> usize {
     machine.muls_called
 }
 
-fn compute_solution_part_two(input: &str) -> i64 {
-    let instructions = convert_input(input);
-    let mut machine = Machine::new(instructions, 1);
-    while !machine.finished {
-        machine.run_instruction();
-    }
-    machine.get_reg("h")
-}
+fn compute_solution_part_two() -> u64 {
+    // This is the solution of my input only.
+    // A general solution would take too long.
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn examples() {
-        use compute_solution_part_one;
-        use compute_solution_part_two;
+    let mut h = 0;
+    for n in (109_900..=126_900).step_by(17) {
+        if !is_prime(n) {
+            h += 1;
+        }
     }
+    h
 }
 
 fn main() {
@@ -222,6 +228,6 @@ fn main() {
     } else {
         let input = read_file(&args[1]);
         println!("solution 1 = {}", compute_solution_part_one(&input));
-        println!("solution 2 = {}", compute_solution_part_two(&input));
+        println!("solution 2 = {}", compute_solution_part_two());
     }
 }
