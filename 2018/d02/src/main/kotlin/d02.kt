@@ -53,11 +53,3 @@ fun main(args: Array<String>) {
     println("solution 1 = $solutionPartOne")
     println("solution 2 = $solutionPartTwo")
 }
-
-fun find(input: List<String>): Int {
-    val two = input.filter { findFreq(it, 2) }.count()
-    val three = input.filter { findFreq(it, 3) }.count()
-    return two * three
-}
-
-fun findFreq(s: String, count: Int): Boolean = s.groupBy { it }.values.indexOfFirst { it.size == count } != -1
