@@ -58,7 +58,7 @@ fn directions_to_points(directions: &[Direction]) -> HashMap<(i64, i64), u64> {
             x += delta_x;
             y += delta_y;
             steps += 1;
-            points.insert((x, y), steps);
+            points.entry((x, y)).or_insert(steps);
         }
     }
     points
