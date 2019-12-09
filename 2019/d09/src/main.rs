@@ -13,7 +13,6 @@ fn read_file(filename: &str) -> String {
 
 fn compute_solution_part_one(input: &str) -> i64 {
     let mut machine = IntCodeMachine::from_string(input);
-    machine.keep_last_input = false;
     machine.add_input_signal(1);
     machine.run_until_halt();
     machine.last_output_signal().unwrap()
@@ -21,7 +20,6 @@ fn compute_solution_part_one(input: &str) -> i64 {
 
 fn compute_solution_part_two(input: &str) -> i64 {
     let mut machine = IntCodeMachine::from_string(input);
-    machine.keep_last_input = false;
     machine.add_input_signal(2);
     machine.run_until_halt();
     machine.last_output_signal().unwrap()

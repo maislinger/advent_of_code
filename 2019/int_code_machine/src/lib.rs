@@ -8,7 +8,7 @@ pub struct IntCodeMachine {
     pub instruction_pointer: usize,
     pub relative_base_offset: i64,
     pub halted: bool,
-    pub keep_last_input: bool,
+    pub default_input: Option<i64>,
 }
 
 impl IntCodeMachine {
@@ -21,7 +21,7 @@ impl IntCodeMachine {
             instruction_pointer: 0,
             relative_base_offset: 0,
             halted: false,
-            keep_last_input: true,
+            default_input: None,
         }
     }
 
@@ -52,6 +52,13 @@ impl IntCodeMachine {
 
     pub fn run_until_halt(&mut self) {
         while !self.halted {
+            self.step();
+        }
+    }
+
+    pub fn run_until_output_or_halt(&mut self) {
+        let n = self.output_signals.len();
+        while !self.halted && self.output_signals.len() == n {
             self.step();
         }
     }
@@ -121,11 +128,11 @@ impl IntCodeMachine {
     }
 
     fn input(&mut self) {
-        if self.input_signals.len() == 0 {
+        if self.input_signals.is_empty() && self.default_input.is_none() {
             panic!("no available input signals")
         }
-        let v = if self.input_signals.len() == 1 && self.keep_last_input {
-            self.input_signals[0]
+        let v = if self.input_signals.is_empty() {
+            self.default_input.unwrap()
         } else {
             self.input_signals.pop_front().unwrap()
         };
