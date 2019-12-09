@@ -1,0 +1,10 @@
+[package]
+name = "d09"
+version = "1.0.0"
+authors = ["maislinger"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+int_code_machine = { path = "../int_code_machine", version = "1.0.0" }
