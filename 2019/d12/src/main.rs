@@ -128,9 +128,7 @@ fn compute_solution_part_two(input: &str) -> u64 {
         let period = phase_spaces[i].find_period();
         periods[i] = period;
     }
-    periods
-        .iter()
-        .fold(0, |t, p| if t == 0 { *p } else { lcm(t, *p) })
+    periods.iter().fold(1, |t, p| lcm(t, *p))
 }
 
 fn main() {
