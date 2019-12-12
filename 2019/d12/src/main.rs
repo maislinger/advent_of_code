@@ -75,9 +75,9 @@ fn parse_input(input: &str) -> [PhaseSpace; 3] {
     let mut y = Vec::new();
     let mut z = Vec::new();
     for c in re.captures_iter(input) {
-            x.push(c[1].parse().unwrap());
-            y.push(c[2].parse().unwrap());
-            z.push(c[3].parse().unwrap());
+        x.push(c[1].parse().unwrap());
+        y.push(c[2].parse().unwrap());
+        z.push(c[3].parse().unwrap());
     }
     [
         PhaseSpace::from_vec(x),
