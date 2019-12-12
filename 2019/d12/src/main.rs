@@ -1,7 +1,8 @@
 extern crate regex;
 
-use std::collections::{BTreeMap, BTreeSet};
 use regex::Regex;
+use std::cmp::Ordering;
+use std::collections::BTreeMap;
 
 fn read_file(filename: &str) -> String {
     use std::fs::File;
@@ -14,93 +15,130 @@ fn read_file(filename: &str) -> String {
     contents.trim().to_owned()
 }
 
-struct Moon {
-    x: i64,
-    y: i64,
-    z: i64,
-    vx: i64,
-    vy: i64,
-    vz: i64,
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
+struct PhaseSpace {
+    x: [i64; 4],
+    v: [i64; 4],
 }
 
-impl Moon {
-    fn new(x: i64, y: i64, z: i64) -> Self {
-        Self { x, y, z, vx: 0, vy: 0, vz: 0 }
-    }
-
-    fn update_vi(vi: &mut i64, i: i64, other_i: i64) {
-        if other_i > i {
-            *vi += 1;
-        } else if other_i < i {
-            *vi -= 1;
+impl PhaseSpace {
+    fn from_vec(x: Vec<i64>) -> Self {
+        Self {
+            x: [x[0], x[1], x[2], x[3]],
+            v: [0; 4],
         }
     }
 
-    fn update_v(&mut self, other: &Self) {
-        Self::update_vi(&mut self.vx, self.x, other.x);
-        Self::update_vi(&mut self.vy, self.y, other.y);
-        Self::update_vi(&mut self.vz, self.z, other.z);
+    fn update_v(&mut self) {
+        for i in 0..4 {
+            for j in (i + 1)..4 {
+                let delta = match self.x[i].cmp(&self.x[j]) {
+                    Ordering::Less => 1,
+                    Ordering::Greater => -1,
+                    Ordering::Equal => 0,
+                };
+                self.v[i] += delta;
+                self.v[j] -= delta;
+            }
+        }
     }
 
-    fn update_pos(&mut self) {
-        self.x += self.vx;
-        self.y += self.vy;
-        self.z += self.vz;
+    fn update_x(&mut self) {
+        for i in 0..4 {
+            self.x[i] += self.v[i];
+        }
     }
 
-    fn kinetic_energy(&self) -> i64 {
-        self.vx.abs() + self.vy.abs() + self.vz.abs()
-    }
+    fn find_period(&mut self) -> (u64, u64) {
+        let mut steps = BTreeMap::new();
+        let mut step = 0;
 
-    fn potential_energy(&self) -> i64 {
-        self.x.abs() + self.y.abs() + self.z.abs()
-    }
+        loop {
+            if steps.contains_key(self) {
+                break;
+            }
+            steps.insert(self.clone(), step);
+            self.update_v();
+            self.update_x();
+            step += 1;
+        }
 
-    fn total_energy(&self) -> i64 {
-        self.potential_energy() * self.kinetic_energy()
+        let first_occurrence = steps[&self];
+        let period = step - first_occurrence;
+        (first_occurrence, period)
     }
 }
 
-fn parse_input(input: &str) -> Vec<Moon> {
+fn parse_input(input: &str) -> [PhaseSpace; 3] {
     let re = Regex::new(r"x=(-?\d*), y=(-?\d*), z=(-?\d*)").unwrap();
-    re.captures_iter(input)
-    .map(|c| {
-        let x = c[1].parse().unwrap();
-        let y = c[2].parse().unwrap();
-        let z = c[3].parse().unwrap();
-        Moon::new(x, y, z)
-    })
-    .collect()
+    let mut x = Vec::new();
+    let mut y = Vec::new();
+    let mut z = Vec::new();
+    for c in re.captures_iter(input) {
+            x.push(c[1].parse().unwrap());
+            y.push(c[2].parse().unwrap());
+            z.push(c[3].parse().unwrap());
+    }
+    [
+        PhaseSpace::from_vec(x),
+        PhaseSpace::from_vec(y),
+        PhaseSpace::from_vec(z),
+    ]
 }
 
-fn update_v(moons: &mut Vec<Moon>) {
-    for i in 1..moons.len() {
-        let (left, right) = moons.split_at_mut(i);
-        let mi = left.last_mut().unwrap();
-        for mj in right.iter_mut() {
-            mi.update_v(&mj);
-            mj.update_v(&mi);
-        }
+fn gcd(a: u64, b: u64) -> u64 {
+    let mut a = a;
+    let mut b = b;
+    while b != 0 {
+        let tmp = b;
+        b = a % b;
+        a = tmp;
     }
+    a
 }
 
-fn update_pos(moons: &mut Vec<Moon>) {
-    for m in moons.iter_mut() {
-        m.update_pos();
-    }
+fn lcm(a: u64, b: u64) -> u64 {
+    a * b / gcd(a, b)
 }
 
 fn compute_solution_part_one(input: &str) -> i64 {
-    let mut moons = parse_input(input);
+    let mut phase_spaces = parse_input(input);
     for _ in 0..1000 {
-        update_v(&mut moons);
-        update_pos(&mut moons);
+        for phase_space in &mut phase_spaces {
+            phase_space.update_v();
+            phase_space.update_x();
+        }
     }
-    moons.iter().map(|m| m.total_energy()).sum()
+
+    let mut total_energy = 0;
+
+    for i in 0..4 {
+        let mut kinetic_energy = 0;
+        let mut potential_energy = 0;
+        for phase_space in &phase_spaces {
+            kinetic_energy += phase_space.x[i].abs();
+            potential_energy += phase_space.v[i].abs();
+        }
+        total_energy += kinetic_energy * potential_energy;
+    }
+
+    total_energy
 }
 
-fn compute_solution_part_two(input: &str) -> i64 {
-    0
+fn compute_solution_part_two(input: &str) -> u64 {
+    let mut phase_spaces = parse_input(input);
+    let mut offsets = [0; 3];
+    let mut periods = [0; 3];
+    for i in 0..3 {
+        let (offset, period) = phase_spaces[i].find_period();
+        offsets[i] = offset;
+        periods[i] = period;
+    }
+    let max_offset = offsets.iter().max().unwrap();
+    let period = periods
+        .iter()
+        .fold(0, |t, p| if t == 0 { *p } else { lcm(t, *p) });
+    max_offset + period
 }
 
 fn main() {
