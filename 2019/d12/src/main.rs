@@ -2,7 +2,6 @@ extern crate regex;
 
 use regex::Regex;
 use std::cmp::Ordering;
-use std::collections::BTreeMap;
 
 fn read_file(filename: &str) -> String {
     use std::fs::File;
@@ -49,23 +48,20 @@ impl PhaseSpace {
         }
     }
 
-    fn find_period(&mut self) -> (u64, u64) {
-        let mut steps = BTreeMap::new();
+    fn find_period(&mut self) -> u64 {
         let mut step = 0;
+        let init = self.clone();
 
         loop {
-            if steps.contains_key(self) {
-                break;
-            }
-            steps.insert(self.clone(), step);
             self.update_v();
             self.update_x();
             step += 1;
+            if *self == init {
+                break;
+            }
         }
 
-        let first_occurrence = steps[&self];
-        let period = step - first_occurrence;
-        (first_occurrence, period)
+        step
     }
 }
 
@@ -127,18 +123,14 @@ fn compute_solution_part_one(input: &str) -> i64 {
 
 fn compute_solution_part_two(input: &str) -> u64 {
     let mut phase_spaces = parse_input(input);
-    let mut offsets = [0; 3];
     let mut periods = [0; 3];
     for i in 0..3 {
-        let (offset, period) = phase_spaces[i].find_period();
-        offsets[i] = offset;
+        let period = phase_spaces[i].find_period();
         periods[i] = period;
     }
-    let max_offset = offsets.iter().max().unwrap();
-    let period = periods
+    periods
         .iter()
-        .fold(0, |t, p| if t == 0 { *p } else { lcm(t, *p) });
-    max_offset + period
+        .fold(0, |t, p| if t == 0 { *p } else { lcm(t, *p) })
 }
 
 fn main() {
