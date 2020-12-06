@@ -28,18 +28,11 @@ fn compute_solution_part_two(input: &str) -> usize {
     input
         .split("\n\n")
         .map(|group| {
-            let initial_set: BTreeSet<_> = group
-                .split_whitespace()
-                .map(|line| line.chars().collect())
-                .next()
-                .unwrap();
-            let set = group
-                .split_whitespace()
-                .map(|line| line.chars().collect())
-                .skip(1)
-                .fold(initial_set, |acc, s| {
-                    acc.intersection(&s).cloned().collect()
-                });
+            let iter_gen = || group.split_whitespace().map(|line| line.chars().collect());
+            let initial_set: BTreeSet<_> = iter_gen().next().unwrap();
+            let set = iter_gen().skip(1).fold(initial_set, |acc, s| {
+                acc.intersection(&s).cloned().collect()
+            });
             set.len()
         })
         .sum()
